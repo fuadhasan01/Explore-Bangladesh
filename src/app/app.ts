@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 
 import {
   LucideArrowRight,
@@ -9,6 +9,7 @@ import {
   LucideMenu,
   LucideX,
 } from '@lucide/angular';
+import { DistrictGeoJsonService } from './core/services/district-geojson.service';
 
 @Component({
   selector: 'app-root',
@@ -26,11 +27,16 @@ import {
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {
+export class App implements OnInit {
   readonly projectName = 'Explore Bangladesh';
 
   readonly menuOpen = signal(false);
 
+  readonly geoData = inject(DistrictGeoJsonService);
+
+  ngOnInit(): void {
+    void this.geoData.load();
+  }
   toggleMenu(): void {
     this.menuOpen.update((open) => !open);
   }
