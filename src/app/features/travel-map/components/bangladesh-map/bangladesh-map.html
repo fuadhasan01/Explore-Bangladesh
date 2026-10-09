@@ -1,0 +1,168 @@
+
+<section class="map-component"
+         aria-label="Interactive Bangladesh district map">
+
+  <!-- Map toolbar -->
+  <div class="map-toolbar">
+
+    <div class="map-heading">
+      <span class="map-heading-icon">✦</span>
+
+      <div>
+        <h3>Explore the Districts</h3>
+        <p>Click or tap a district to select it</p>
+      </div>
+    </div>
+
+    <div class="zoom-controls"
+         aria-label="Map zoom controls">
+
+      <button
+        type="button"
+        class="zoom-button"
+        aria-label="Zoom in"
+        title="Zoom in"
+        [disabled]="!geoData.data()"
+        (click)="zoomIn()">
+        +
+      </button>
+
+      <button
+        type="button"
+        class="zoom-button"
+        aria-label="Zoom out"
+        title="Zoom out"
+        [disabled]="!geoData.data()"
+        (click)="zoomOut()">
+        −
+      </button>
+
+      <button
+        type="button"
+        class="reset-button"
+        [disabled]="!geoData.data()"
+        (click)="resetZoom()">
+        Reset Zoom
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Map container -->
+  <div class="map-stage">
+
+    @if (geoData.loading()) {
+
+      <div class="map-status" role="status">
+        <span class="status-symbol">◌</span>
+        <h3>Loading Bangladesh Map</h3>
+        <p>Preparing geographical boundaries...</p>
+      </div>
+
+    } @else if (geoData.error()) {
+
+      <div class="map-status" role="alert">
+        <span class="status-symbol">!</span>
+        <h3>Unable to Load Map</h3>
+        <p>{{ geoData.error() }}</p>
+      </div>
+
+    } @else if (geoData.data()) {
+
+      <!-- D3 renders the 64 district paths here -->
+      <svg
+        #mapSvg
+        class="map-svg"
+        viewBox="0 0 760 840"
+        preserveAspectRatio="xMidYMid meet"
+        role="group"
+        aria-label="Bangladesh map with 64 selectable districts">
+
+        <title>
+          Interactive Bangladesh district travel map
+        </title>
+
+      </svg>
+
+      <!-- Hover tooltip -->
+      @if (tooltip(); as tip) {
+
+        <div
+          class="district-tooltip"
+          [style.left.px]="tip.x"
+          [style.top.px]="tip.y"
+          aria-hidden="true">
+
+          <span class="tooltip-label">
+            DISTRICT
+          </span>
+
+          <strong>{{ tip.name }}</strong>
+
+          <span class="tooltip-division">
+            {{ tip.division }} Division
+          </span>
+
+          <span
+            class="tooltip-status"
+            [class.is-visited]="tip.visited">
+
+            {{ tip.visited ? 'Selected' : 'Not selected' }}
+          </span>
+
+        </div>
+      }
+
+    } @else {
+
+      <div class="map-status">
+        <h3>Map Not Available</h3>
+        <p>Geographical data has not loaded.</p>
+      </div>
+
+    }
+
+  </div>
+
+  <!-- Map footer -->
+  <div class="map-footer">
+
+    <div class="map-legend">
+      <span class="legend-item">
+        <span class="legend-dot unvisited"></span>
+        Unvisited
+      </span>
+
+      <span class="legend-item">
+        <span class="legend-dot visited"></span>
+        Selected
+      </span>
+    </div>
+
+    <div class="map-selection" aria-live="polite">
+      <strong>{{ selectedCount() }}</strong>
+      <span>districts selected</span>
+    </div>
+
+  </div>
+
+  <!-- Preview controls -->
+  <div class="map-notice">
+    <div>
+      <strong>Interactive Map Preview</strong>
+      <p>
+        Your selections are temporary in Phase 4.
+        We'll add shared travel state in Phase 5.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="clear-button"
+      [disabled]="selectedCount() === 0"
+      (click)="clearSelection()">
+      Clear Selection
+    </button>
+  </div>
+
+</section>

@@ -10,6 +10,7 @@ import {
   LucideX,
 } from '@lucide/angular';
 import { DistrictGeoJsonService } from './core/services/district-geojson.service';
+import { BangladeshMap } from './features/travel-map/components/bangladesh-map/bangladesh-map';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ import { DistrictGeoJsonService } from './core/services/district-geojson.service
     LucideMapPin,
     LucideMenu,
     LucideX,
+    BangladeshMap,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
