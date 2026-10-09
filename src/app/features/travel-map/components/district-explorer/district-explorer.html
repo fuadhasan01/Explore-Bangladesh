@@ -1,0 +1,231 @@
+
+<section
+  class="district-explorer"
+  aria-label="District Explorer">
+
+  <!-- Header -->
+  <div class="explorer-heading">
+    <div>
+      <h3>District Explorer</h3>
+      <p>Find and mark the places you've visited.</p>
+    </div>
+
+    <span class="visited-badge">
+      {{ travelState.visitedCount() }}
+      /
+      {{ travelState.totalDistricts() }}
+    </span>
+  </div>
+
+  <!-- Search -->
+  <div class="search-field">
+    <label for="district-search">
+      Search districts
+    </label>
+
+    <div class="input-wrapper">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+
+      <input
+        #searchInput
+        id="district-search"
+        type="search"
+        placeholder="Search by district name..."
+        autocomplete="off"
+        [value]="searchQuery()"
+        (input)="searchQuery.set(searchInput.value)"
+      />
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-grid">
+
+    <div class="filter-field">
+      <label for="division-filter">Division</label>
+
+      <select
+        #divisionSelect
+        id="division-filter"
+        [value]="selectedDivision()"
+        (change)="selectedDivision.set(divisionSelect.value)">
+
+        <option value="all">All divisions</option>
+
+        @for (division of divisions; track division) {
+          <option [value]="division">
+            {{ division }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-field">
+      <label for="visited-filter">Status</label>
+
+      <select
+        #statusSelect
+        id="visited-filter"
+        [value]="visitFilter()"
+        (change)="visitFilter.set(
+          statusSelect.value === 'visited'
+            ? 'visited'
+            : statusSelect.value === 'unvisited'
+              ? 'unvisited'
+              : 'all'
+        )">
+
+        <option value="all">All districts</option>
+        <option value="visited">Visited</option>
+        <option value="unvisited">Not visited</option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- Results summary -->
+  <div class="results-toolbar">
+    <span aria-live="polite">
+      {{ filteredCount() }} districts found
+    </span>
+
+    @if (hasActiveFilters()) {
+      <button
+        type="button"
+        class="reset-filters"
+        (click)="resetFilters()">
+        Reset filters
+      </button>
+    }
+  </div>
+
+  <!-- District list -->
+  @if (geoData.loading()) {
+
+    <div class="explorer-state" role="status">
+      Loading districts...
+    </div>
+
+  } @else if (geoData.error()) {
+
+    <div class="explorer-state error" role="alert">
+      Unable to load district information.
+    </div>
+
+  } @else if (filteredCount() === 0) {
+
+    <div class="explorer-state">
+      <span class="empty-symbol" aria-hidden="true">
+        ⌕
+      </span>
+
+      <h4>No districts found</h4>
+
+      <p>
+        Try a different search term or
+        change your filters.
+      </p>
+
+      <button
+        type="button"
+        class="reset-filters"
+        (click)="resetFilters()">
+        Clear filters
+      </button>
+    </div>
+
+  } @else {
+
+    <div
+      class="district-list"
+      aria-label="District search results">
+
+      @for (
+        district of filteredDistricts();
+        track district.id
+      ) {
+
+        <button
+          type="button"
+          class="district-item"
+          [class.is-visited]="
+            travelState.isVisited(district.id)
+          "
+          [attr.aria-pressed]="
+            travelState.isVisited(district.id)
+          "
+          [attr.aria-label]="
+            district.name + ', ' +
+            district.division + ' Division, ' +
+            (travelState.isVisited(district.id)
+              ? 'visited'
+              : 'not visited')
+          "
+          (click)="toggleDistrict(district.id)">
+
+          <span
+            class="district-check"
+            aria-hidden="true">
+            @if (travelState.isVisited(district.id)) {
+              ✓
+            }
+          </span>
+
+          <span class="district-information">
+            <strong>{{ district.name }}</strong>
+            <small>{{ district.division }} Division</small>
+          </span>
+
+          <span
+            class="district-status"
+            [class.visited]="
+              travelState.isVisited(district.id)
+            ">
+            {{
+              travelState.isVisited(district.id)
+                ? 'Visited'
+                : 'Visit'
+            }}
+          </span>
+
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Bulk actions -->
+  <div class="explorer-actions">
+    <button
+      type="button"
+      class="select-button"
+      [disabled]="
+        filteredCount() === 0 ||
+        allFilteredVisited()
+      "
+      (click)="selectFiltered()">
+      Select visible
+    </button>
+
+    <button
+      type="button"
+      class="clear-button"
+      [disabled]="selectedInFiltered() === 0"
+      (click)="clearFiltered()">
+      Clear visible
+    </button>
+  </div>
+
+  <p class="explorer-hint">
+    Actions apply only to the districts
+    matching your current filters.
+  </p>
+
+</section>

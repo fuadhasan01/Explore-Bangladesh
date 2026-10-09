@@ -12,6 +12,7 @@ import {
 import { DistrictGeoJsonService } from './core/services/district-geojson.service';
 import { BangladeshMap } from './features/travel-map/components/bangladesh-map/bangladesh-map';
 import { TravelStateService } from './core/services/travel-state.service';
+import { DistrictExplorer } from './features/travel-map/components/district-explorer/district-explorer';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +25,9 @@ import { TravelStateService } from './core/services/travel-state.service';
     LucideMapPin,
     LucideMenu,
     LucideX,
+
     BangladeshMap,
+    DistrictExplorer,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
