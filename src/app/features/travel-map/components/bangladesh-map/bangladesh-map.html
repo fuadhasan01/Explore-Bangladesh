@@ -147,22 +147,34 @@
   </div>
 
   <!-- Preview controls -->
-  <div class="map-notice">
-    <div>
-      <strong>Interactive Map Preview</strong>
-      <p>
-        Your selections are temporary in Phase 4.
-        We'll add shared travel state in Phase 5.
-      </p>
+
+<div class="map-notice">
+
+<div>
+    <strong>Your Travel Progress</strong>
+    
+    <p>
+    {{ travelState.visitedCount() }} of
+    {{ travelState.totalDistricts() }}
+    districts visited.
+    </p>
     </div>
+
+<div class="flex flex-wrap gap-2">
+
+    <button type="button" class="reset-button" [disabled]="!geoData.data()" (click)="travelState.selectAll()">
+        Select All
+    </button>
 
     <button
       type="button"
       class="clear-button"
       [disabled]="selectedCount() === 0"
       (click)="clearSelection()">
-      Clear Selection
+    Clear All
     </button>
-  </div>
+</div>
+</div>
+
 
 </section>

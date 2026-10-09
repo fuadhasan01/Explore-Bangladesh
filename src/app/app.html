@@ -365,34 +365,48 @@
               their district counts.
             </p>
 
-            <div class="mt-8 space-y-3">
+            
+            <div class="mt-8 space-y-4">
 
-              @if (geoData.data()) {
               @for (
-              division of geoData.divisionSummary();
-              track division.name
+                division of travelState.divisionProgress();
+                track division.name
               ) {
-              <div class="flex items-center
-                                            justify-between rounded-xl
-                                            border border-slate-100
-                                            bg-slate-50 px-4 py-3">
 
-                    <span class="text-sm font-semibold
-                                                    text-slate-700">
+                <div class="rounded-xl border border-slate-100
+                                            bg-slate-50 p-4">
+                
+                  <div class="flex items-center justify-between">
+                
+                    <span class="text-sm font-bold text-ink">
                       {{ division.name }}
                     </span>
 
-                    <span class="rounded-full bg-emerald-100
-                                                    px-3 py-1 text-xs font-bold
-                                                    text-emerald-800">
-                      {{ division.totalDistricts }}
+                    <span class="text-xs font-semibold
+                                                    text-emerald-700">
+                      {{ division.visited }}/{{ division.total }}
                     </span>
 
                   </div>
-                  }
+<div class="mt-3 h-2 overflow-hidden
+                              rounded-full bg-slate-200">
+
+  <div class="h-full rounded-full bg-emerald-500
+                            transition-all duration-300" [style.width.%]="division.percentage">
+  </div>
+
+</div>
+
+<p class="mt-2 text-xs text-slate-500">
+  {{ division.percentage }}% explored
+</p>
+
+</div>
+
               }
 
             </div>
+
 
           </aside>
         </div>
@@ -403,72 +417,79 @@
   
   
   <!-- STATISTICS PREVIEW -->
-  <section id="statistics" class="bg-surface py-24">
-    <div class="page-container">
-  
-      <div class="mb-10">
-        <p class="section-eyebrow">TRAVEL INSIGHTS</p>
-  
-        <h2 class="mt-3 text-3xl font-extrabold
-                     tracking-tight text-ink sm:text-4xl">
-          Your Journey in Numbers
-        </h2>
-  
-        <p class="mt-4 text-slate-600">
-          Statistics will update as you mark
-          districts visited.
+
+<section id="statistics" class="bg-surface py-24">
+  <div class="page-container">
+
+    <div class="mb-10">
+      <p class="section-eyebrow">TRAVEL INSIGHTS</p>
+
+      <h2 class="mt-3 text-3xl font-extrabold
+                 tracking-tight text-ink sm:text-4xl">
+        Your Journey in Numbers
+      </h2>
+
+      <p class="mt-4 text-slate-600">
+        Track your progress across Bangladesh.
         </p>
-      </div>
-<div class="grid gap-5 sm:grid-cols-2
-                  lg:grid-cols-4">
+        </div>
 
-  <article class="stat-card">
-    <p class="stat-label">Total Districts</p>
-    <p class="mt-4 text-4xl font-extrabold
-                    tracking-tight text-ink">
-      64
-    </p>
-    <p class="mt-3 text-xs text-slate-500">
-      Across Bangladesh
-    </p>
-  </article>
+    <div class="grid gap-5 sm:grid-cols-2
+                        lg:grid-cols-4">
 
-  <article class="stat-card">
-    <p class="stat-label">Visited Districts</p>
-    <p class="mt-4 text-4xl font-extrabold
-                    tracking-tight text-ink">
-      —
-    </p>
-    <p class="mt-3 text-xs text-slate-500">
-      Awaiting travel tracking
-    </p>
-  </article>
+      <article class="stat-card">
+        <p class="stat-label">Total Districts</p>
+<p class="mt-4 text-4xl font-extrabold text-ink">
+  {{ travelState.totalDistricts() }}
+</p>
 
-  <article class="stat-card">
-    <p class="stat-label">Remaining Districts</p>
-    <p class="mt-4 text-4xl font-extrabold
-                    tracking-tight text-ink">
-      —
-    </p>
-    <p class="mt-3 text-xs text-slate-500">
-      Calculated from your visits
-    </p>
-  </article>
+        <p class="mt-3 text-xs text-slate-500">
+          Across Bangladesh
+        </p>
+        </article>
 
-  <article class="stat-card">
-    <p class="stat-label">Exploration Progress</p>
-    <p class="mt-4 text-4xl font-extrabold
-                    tracking-tight text-brand-dark">
-      —
-    </p>
-    <p class="mt-3 text-xs text-slate-500">
-      Percentage of districts visited
-    </p>
-  </article>
+      <article class="stat-card">
+        <p class="stat-label">Visited Districts</p>
+<p class="mt-4 text-4xl font-extrabold text-ink">
+  {{ travelState.visitedCount() }}
+</p>
 
-      </div>
+        <p class="mt-3 text-xs text-slate-500">
+          Your explored districts
+          </p>
+          </article>
+
+      <article class="stat-card">
+        <p class="stat-label">Remaining Districts</p>
+<p class="mt-4 text-4xl font-extrabold text-ink">
+  {{ travelState.remainingCount() }}
+</p>
+
+        <p class="mt-3 text-xs text-slate-500">
+          Places left to explore
+          </p>
+          </article>
+
+      <article class="stat-card">
+        <p class="stat-label">Exploration Progress</p>
+
+        <p class="mt-4 text-4xl font-extrabold
+                  text-brand-dark">
+          {{ travelState.progressPercentage() }}%
+        </p>
+<div class="mt-4 h-2 overflow-hidden
+                    rounded-full bg-slate-100">
+
+  <div class="h-full rounded-full bg-emerald-500
+                   transition-all duration-300" [style.width.%]="travelState.progressPercentage()">
+  </div>
+</div>
+</article>
+
     </div>
-  </section>
+    </div>
+    </section>
+
   
   
   <!-- FINAL CTA -->

@@ -11,6 +11,7 @@ import {
 } from '@lucide/angular';
 import { DistrictGeoJsonService } from './core/services/district-geojson.service';
 import { BangladeshMap } from './features/travel-map/components/bangladesh-map/bangladesh-map';
+import { TravelStateService } from './core/services/travel-state.service';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +32,7 @@ import { BangladeshMap } from './features/travel-map/components/bangladesh-map/b
 })
 export class App implements OnInit {
   readonly projectName = 'Explore Bangladesh';
+  readonly travelState = inject(TravelStateService);
 
   readonly menuOpen = signal(false);
 

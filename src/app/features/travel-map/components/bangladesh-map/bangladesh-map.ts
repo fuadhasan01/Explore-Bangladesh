@@ -5,6 +5,7 @@ import {
   ElementRef,
   afterRenderEffect,
   computed,
+  effect,
   inject,
   signal,
   untracked,
@@ -13,14 +14,14 @@ import {
 
 import * as d3 from 'd3';
 
-import { DistrictGeoJsonService } from
-  '../../../../core/services/district-geojson.service';
+import { DistrictGeoJsonService } from '../../../../core/services/district-geojson.service';
 
 import type {
   DistrictCollection,
   DistrictFeature,
   DistrictGeometry,
 } from '../../../../core/models/district.model';
+import { TravelStateService } from '../../../../core/services/travel-state.service';
 
 const MAP_WIDTH = 760;
 const MAP_HEIGHT = 840;
@@ -47,34 +48,31 @@ interface DistrictTooltip {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BangladeshMap {
-
   readonly geoData = inject(DistrictGeoJsonService);
-
-  private readonly mapSvg =
-    viewChild<ElementRef<SVGSVGElement>>('mapSvg');
+  readonly travelState = inject(TravelStateService);
+  private readonly mapSvg = viewChild<ElementRef<SVGSVGElement>>('mapSvg');
 
   // Temporary selection state for Phase 4.
-  readonly selectedDistricts =
-    signal<ReadonlySet<string>>(new Set<string>());
-
-  readonly selectedCount = computed(
-    () => this.selectedDistricts().size
-  );
+  readonly selectedCount = this.travelState.visitedCount;
 
   readonly tooltip = signal<DistrictTooltip | null>(null);
 
   private hoveredDistrictId: string | null = null;
 
-  private svgSelection:
-    d3.Selection<SVGSVGElement, unknown, null, undefined>
-    | null = null;
+  private svgSelection: d3.Selection<SVGSVGElement, unknown, null, undefined> | null = null;
 
-  private zoomBehavior:
-    d3.ZoomBehavior<SVGSVGElement, unknown>
-    | null = null;
+  private zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null;
 
   constructor() {
     void this.geoData.load();
+
+    effect(() => {
+      this.travelState.visitedDistrictIds();
+
+      untracked(() => {
+        this.updateDistrictStyles();
+      });
+    });
 
     afterRenderEffect({
       write: (onCleanup) => {
@@ -102,10 +100,7 @@ export class BangladeshMap {
     });
   }
 
-  private renderMap(
-    svgElement: SVGSVGElement,
-    data: DistrictCollection
-  ): void {
+  private renderMap(svgElement: SVGSVGElement, data: DistrictCollection): void {
     const svg = d3.select(svgElement);
 
     svg.selectAll('*').remove();
@@ -118,61 +113,40 @@ export class BangladeshMap {
 
     // Project real coordinates into our SVG.
 
+    const correctedData: DistrictCollection = {
+      type: 'FeatureCollection',
+      features: data.features.map((feature) => ({
+        ...feature,
+        geometry: fixPolygonWinding(feature.geometry),
+      })),
+    };
 
-const correctedData: DistrictCollection = {
-  type: 'FeatureCollection',
-  features: data.features.map(feature => ({
-    ...feature,
-    geometry: fixPolygonWinding(feature.geometry),
-  })),
-};
+    console.log('Corrected GeoJSON bounds:', d3.geoBounds(correctedData));
 
-console.log(
-  'Corrected GeoJSON bounds:',
-  d3.geoBounds(correctedData)
-);
-
-const projection = d3.geoMercator()
-  .fitExtent(
-    [
-      [MAP_PADDING, MAP_PADDING],
+    const projection = d3.geoMercator().fitExtent(
       [
-        MAP_WIDTH - MAP_PADDING,
-        MAP_HEIGHT - MAP_PADDING,
+        [MAP_PADDING, MAP_PADDING],
+        [MAP_WIDTH - MAP_PADDING, MAP_HEIGHT - MAP_PADDING],
       ],
-    ],
-    correctedData
-  );
+      correctedData,
+    );
 
-const pathGenerator = d3.geoPath(projection);
+    const pathGenerator = d3.geoPath(projection);
 
-
-console.log('GeoJSON bounds:', d3.geoBounds(data));
-console.log('Projected bounds:', pathGenerator.bounds(data));
-
+    console.log('GeoJSON bounds:', d3.geoBounds(data));
+    console.log('Projected bounds:', pathGenerator.bounds(data));
 
     // All district paths will sit inside this group.
     // Zooming transforms the group, not the SVG itself.
-    const mapLayer = svg
-      .append('g')
-      .attr('class', 'district-layer');
+    const mapLayer = svg.append('g').attr('class', 'district-layer');
 
     mapLayer
-      .selectAll<SVGPathElement, DistrictFeature>(
-        '.district-path'
-      )
-      .data(
-        correctedData.features,
-        district => district.properties.ADM2_PCODE
-      )
+      .selectAll<SVGPathElement, DistrictFeature>('.district-path')
+      .data(correctedData.features, (district) => district.properties.ADM2_PCODE)
       .join('path')
       .attr('class', 'district-path')
-      .attr('data-district', district =>
-        district.properties.ADM2_PCODE
-      )
-      .attr('d', district =>
-        pathGenerator(district) ?? ''
-      )
+      .attr('data-district', (district) => district.properties.ADM2_PCODE)
+      .attr('d', (district) => pathGenerator(district) ?? '')
       .attr('fill', UNVISITED_COLOR)
       .attr('stroke', '#FFFFFF')
       .attr('stroke-width', 1.2)
@@ -184,8 +158,7 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
 
       // Mouse and pointer interactions.
       .on('pointerenter', (event, district) => {
-        this.hoveredDistrictId =
-          district.properties.ADM2_PCODE;
+        this.hoveredDistrictId = district.properties.ADM2_PCODE;
 
         this.showTooltip(event, district);
         this.updateDistrictStyles();
@@ -208,18 +181,14 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
 
       // Keyboard accessibility.
       .on('keydown', (event: KeyboardEvent, district) => {
-        if (
-          event.key === 'Enter' ||
-          event.key === ' '
-        ) {
+        if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           this.toggleDistrict(district);
         }
       })
 
       .on('focus', (_event, district) => {
-        this.hoveredDistrictId =
-          district.properties.ADM2_PCODE;
+        this.hoveredDistrictId = district.properties.ADM2_PCODE;
 
         this.updateDistrictStyles();
       })
@@ -242,11 +211,8 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
         [0, 0],
         [MAP_WIDTH, MAP_HEIGHT],
       ])
-      .on('zoom', event => {
-        mapLayer.attr(
-          'transform',
-          event.transform.toString()
-        );
+      .on('zoom', (event) => {
+        mapLayer.attr('transform', event.transform.toString());
       });
 
     svg.call(zoomBehavior);
@@ -264,10 +230,7 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
     this.updateDistrictStyles();
   }
 
-  private showTooltip(
-    event: PointerEvent,
-    district: DistrictFeature
-  ): void {
+  private showTooltip(event: PointerEvent, district: DistrictFeature): void {
     const svgElement = this.mapSvg()?.nativeElement;
 
     if (!svgElement) {
@@ -276,28 +239,16 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
 
     const bounds = svgElement.getBoundingClientRect();
 
-    const x = Math.max(
-      8,
-      Math.min(
-        event.clientX - bounds.left + 14,
-        bounds.width - 190
-      )
-    );
+    const x = Math.max(8, Math.min(event.clientX - bounds.left + 14, bounds.width - 190));
 
-    const y = Math.max(
-      8,
-      Math.min(
-        event.clientY - bounds.top + 14,
-        bounds.height - 95
-      )
-    );
+    const y = Math.max(8, Math.min(event.clientY - bounds.top + 14, bounds.height - 95));
 
     const id = district.properties.ADM2_PCODE;
 
     this.tooltip.set({
       name: district.properties.ADM2_EN,
       division: district.properties.ADM1_EN,
-      visited: this.selectedDistricts().has(id),
+      visited: this.travelState.isVisited(id),
       x,
       y,
     });
@@ -306,32 +257,22 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
   toggleDistrict(district: DistrictFeature): void {
     const id = district.properties.ADM2_PCODE;
 
-    this.selectedDistricts.update(current => {
-      const updated = new Set(current);
+    this.travelState.toggleDistrict(id);
 
-      if (updated.has(id)) {
-        updated.delete(id);
-      } else {
-        updated.add(id);
-      }
-
-      return updated;
-    });
-
-    this.tooltip.update(current =>
+    this.tooltip.update((current) =>
       current
         ? {
             ...current,
-            visited: this.selectedDistricts().has(id),
+            visited: this.travelState.isVisited(id),
           }
-        : null
+        : null,
     );
 
     this.updateDistrictStyles();
   }
 
   clearSelection(): void {
-    this.selectedDistricts.set(new Set<string>());
+    this.travelState.clearAll();
     this.tooltip.set(null);
     this.updateDistrictStyles();
   }
@@ -341,46 +282,27 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
       return;
     }
 
-    const selected = this.selectedDistricts();
-
+    const selected = this.travelState.visitedDistrictIds();
     this.svgSelection
-      .selectAll<SVGPathElement, DistrictFeature>(
-        '.district-path'
-      )
-      .attr('fill', district => {
+      .selectAll<SVGPathElement, DistrictFeature>('.district-path')
+      .attr('fill', (district) => {
         const id = district.properties.ADM2_PCODE;
 
         if (id === this.hoveredDistrictId) {
           return HOVER_COLOR;
         }
 
-        return selected.has(id)
-          ? VISITED_COLOR
-          : UNVISITED_COLOR;
+        return selected.has(id) ? VISITED_COLOR : UNVISITED_COLOR;
       })
-      .attr('stroke', district =>
-        district.properties.ADM2_PCODE ===
-        this.hoveredDistrictId
-          ? '#047857'
-          : '#FFFFFF'
+      .attr('stroke', (district) =>
+        district.properties.ADM2_PCODE === this.hoveredDistrictId ? '#047857' : '#FFFFFF',
       )
-      .attr('stroke-width', district =>
-        district.properties.ADM2_PCODE ===
-        this.hoveredDistrictId
-          ? 2.5
-          : 1.2
+      .attr('stroke-width', (district) =>
+        district.properties.ADM2_PCODE === this.hoveredDistrictId ? 2.5 : 1.2,
       )
-      .attr('aria-pressed', district =>
-        String(
-          selected.has(
-            district.properties.ADM2_PCODE
-          )
-        )
-      )
-      .attr('aria-label', district => {
-        const isSelected = selected.has(
-          district.properties.ADM2_PCODE
-        );
+      .attr('aria-pressed', (district) => String(selected.has(district.properties.ADM2_PCODE)))
+      .attr('aria-label', (district) => {
+        const isSelected = selected.has(district.properties.ADM2_PCODE);
 
         return (
           `${district.properties.ADM2_EN}, ` +
@@ -403,10 +325,7 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
       return;
     }
 
-    this.svgSelection
-      .transition()
-      .duration(250)
-      .call(this.zoomBehavior.scaleBy, factor);
+    this.svgSelection.transition().duration(250).call(this.zoomBehavior.scaleBy, factor);
   }
 
   resetZoom(): void {
@@ -414,13 +333,7 @@ console.log('Projected bounds:', pathGenerator.bounds(data));
       return;
     }
 
-    this.svgSelection
-      .transition()
-      .duration(300)
-      .call(
-        this.zoomBehavior.transform,
-        d3.zoomIdentity
-      );
+    this.svgSelection.transition().duration(300).call(this.zoomBehavior.transform, d3.zoomIdentity);
   }
 }
 
