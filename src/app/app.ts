@@ -14,6 +14,7 @@ import { BangladeshMap } from './features/travel-map/components/bangladesh-map/b
 import { TravelStateService } from './core/services/travel-state.service';
 import { DistrictExplorer } from './features/travel-map/components/district-explorer/district-explorer';
 import { DivisionProgress } from './features/travel-map/components/division-progress/division-progress';
+import { MapExport } from './features/travel-map/components/map-export/map-export';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +31,7 @@ import { DivisionProgress } from './features/travel-map/components/division-prog
     BangladeshMap,
     DistrictExplorer,
     DivisionProgress,
+    MapExport,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',

@@ -1,0 +1,430 @@
+
+<!-- Button visible on the main page -->
+<button
+  type="button"
+  class="open-export-button"
+  [disabled]="!exportReady()"
+  (click)="open()">
+
+  <span aria-hidden="true">↓</span>
+  Download My Travel Map
+</button>
+
+<!-- Export modal -->
+<dialog
+  #exportDialog
+  class="export-dialog"
+  aria-labelledby="export-heading"
+  (cancel)="exporting() ? $event.preventDefault() : null">
+
+  <div class="modal-header">
+
+    <div>
+      <p class="eyebrow">SHARE YOUR JOURNEY</p>
+      <h2 id="export-heading">
+        Create Your Travel Poster
+      </h2>
+    </div>
+
+    <button
+      type="button"
+      class="close-button"
+      aria-label="Close export dialog"
+      [disabled]="exporting()"
+      (click)="close()">
+      ×
+    </button>
+
+  </div>
+
+  <div class="modal-content">
+
+    <!-- Customization sidebar -->
+    <div class="customization-panel">
+
+      <h3>Customize Your Map</h3>
+
+      <div class="form-field">
+        <label for="poster-title">
+          Poster Title
+        </label>
+
+        <input
+          #titleInput
+          id="poster-title"
+          type="text"
+          maxlength="38"
+          [value]="posterTitle()"
+          (input)="posterTitle.set(titleInput.value)"
+        />
+      </div>
+
+      <div class="color-section">
+        <h4>Map Colors</h4>
+
+        <div class="color-field">
+          <label for="visited-color">
+            Visited districts
+          </label>
+
+          <input
+            #visitedInput
+            id="visited-color"
+            type="color"
+            [value]="visitedColor()"
+            (input)="visitedColor.set(visitedInput.value)"
+          />
+        </div>
+
+        <div class="color-field">
+          <label for="unvisited-color">
+            Unvisited districts
+          </label>
+
+          <input
+            #unvisitedInput
+            id="unvisited-color"
+            type="color"
+            [value]="unvisitedColor()"
+            (input)="unvisitedColor.set(
+              unvisitedInput.value
+            )"
+          />
+        </div>
+
+        <div class="color-field">
+          <label for="background-color">
+            Poster background
+          </label>
+
+          <input
+            #backgroundInput
+            id="background-color"
+            type="color"
+            [value]="backgroundColor()"
+            (input)="backgroundColor.set(
+              backgroundInput.value
+            )"
+          />
+        </div>
+      </div>
+
+      <div class="display-options">
+        <h4>Poster Elements</h4>
+
+        <label class="option-row">
+          <input
+            #statisticsInput
+            type="checkbox"
+            [checked]="showStatistics()"
+            (change)="showStatistics.set(
+              statisticsInput.checked
+            )"
+          />
+          Include travel statistics
+        </label>
+
+        <label class="option-row">
+          <input
+            #legendInput
+            type="checkbox"
+            [checked]="showLegend()"
+            (change)="showLegend.set(
+              legendInput.checked
+            )"
+          />
+          Include map legend
+        </label>
+
+        <label class="option-row">
+          <input
+            #brandingInput
+            type="checkbox"
+            [checked]="showBranding()"
+            (change)="showBranding.set(
+              brandingInput.checked
+            )"
+          />
+          Include Explore Bangladesh branding
+        </label>
+      </div>
+
+      <button
+        type="button"
+        class="reset-button"
+        (click)="resetAppearance()">
+        Reset appearance
+      </button>
+
+      <p class="customization-help">
+        Your map automatically reflects the
+        districts you've selected.
+      </p>
+
+    </div>
+
+    <!-- Poster preview -->
+    <div class="preview-panel">
+
+      <div class="preview-heading">
+        <h3>Live Preview</h3>
+        <span>800 × 1000</span>
+      </div>
+
+      <!-- Actual exportable SVG -->
+      <div class="poster-container">
+
+        <svg
+          #posterSvg
+          class="poster-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          width="800"
+          height="1000"
+          viewBox="0 0 800 1000"
+          role="img"
+          aria-label="Personalized Bangladesh travel poster">
+
+          <title>
+            My Bangladesh travel map
+          </title>
+
+          <!-- Poster background -->
+          <rect
+            x="0"
+            y="0"
+            width="800"
+            height="1000"
+            [attr.fill]="backgroundColor()"
+          />
+
+          <!-- Decorative accent -->
+          <circle
+            cx="725"
+            cy="80"
+            r="155"
+            [attr.fill]="visitedColor()"
+            opacity="0.07"
+          />
+
+          <g font-family="Arial, sans-serif">
+
+            <!-- Brand eyebrow -->
+            <text
+              x="400"
+              y="48"
+              font-size="15"
+              font-weight="700"
+              text-anchor="middle"
+              letter-spacing="4"
+              fill="#047857">
+              EXPLORE BANGLADESH
+            </text>
+
+            <!-- Poster title -->
+            <text
+              x="400"
+              y="105"
+              font-size="33"
+              font-weight="800"
+              text-anchor="middle"
+              fill="#0B1220">
+              {{ posterTitle() || 'My Travel Journey' }}
+            </text>
+
+            <text
+              x="400"
+              y="139"
+              font-size="16"
+              text-anchor="middle"
+              fill="#64748B">
+              Exploring the beauty of 64 districts
+            </text>
+
+            <!-- REAL BANGLADESH MAP -->
+            <g
+              aria-label="Bangladesh districts"
+              stroke="#FFFFFF"
+              stroke-width="1.15"
+              stroke-linejoin="round">
+
+              @for (
+                district of districtPaths();
+                track district.id
+              ) {
+                <path
+                  [attr.d]="district.d"
+                  [attr.fill]="
+                    travelState.isVisited(district.id)
+                      ? visitedColor()
+                      : unvisitedColor()
+                  "
+                />
+              }
+
+            </g>
+
+            <!-- Map legend -->
+            @if (showLegend()) {
+              <g transform="translate(245, 828)">
+
+                <rect
+                  x="0"
+                  y="0"
+                  width="17"
+                  height="17"
+                  rx="4"
+                  [attr.fill]="visitedColor()"
+                />
+
+                <text
+                  x="27"
+                  y="14"
+                  font-size="14"
+                  fill="#475569">
+                  Visited
+                </text>
+
+                <rect
+                  x="160"
+                  y="0"
+                  width="17"
+                  height="17"
+                  rx="4"
+                  [attr.fill]="unvisitedColor()"
+                  stroke="#CBD5E1"
+                />
+
+                <text
+                  x="187"
+                  y="14"
+                  font-size="14"
+                  fill="#475569">
+                  Not visited
+                </text>
+
+              </g>
+            }
+
+            <!-- Statistics -->
+            @if (showStatistics()) {
+              <g>
+                <line
+                  x1="75"
+                  y1="875"
+                  x2="725"
+                  y2="875"
+                  stroke="#CBD5E1"
+                />
+
+                <text
+                  x="190"
+                  y="930"
+                  font-size="37"
+                  font-weight="800"
+                  text-anchor="middle"
+                  fill="#0B1220">
+                  {{ travelState.visitedCount() }}
+                </text>
+
+                <text
+                  x="190"
+                  y="957"
+                  font-size="13"
+                  text-anchor="middle"
+                  fill="#64748B">
+                  DISTRICTS VISITED
+                </text>
+
+                <text
+                  x="400"
+                  y="930"
+                  font-size="37"
+                  font-weight="800"
+                  text-anchor="middle"
+                  fill="#0B1220">
+                  {{ travelState.remainingCount() }}
+                </text>
+
+                <text
+                  x="400"
+                  y="957"
+                  font-size="13"
+                  text-anchor="middle"
+                  fill="#64748B">
+                  REMAINING
+                </text>
+
+                <text
+                  x="610"
+                  y="930"
+                  font-size="37"
+                  font-weight="800"
+                  text-anchor="middle"
+                  [attr.fill]="visitedColor()">
+                  {{ travelState.progressPercentage() }}%
+                </text>
+
+                <text
+                  x="610"
+                  y="957"
+                  font-size="13"
+                  text-anchor="middle"
+                  fill="#64748B">
+                  DISTRICTS EXPLORED
+                </text>
+              </g>
+            }
+
+            <!-- Footer branding -->
+            @if (showBranding()) {
+              <text
+                x="400"
+                y="988"
+                font-size="12"
+                text-anchor="middle"
+                fill="#64748B">
+                Made with Explore Bangladesh
+              </text>
+            }
+
+          </g>
+        </svg>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Export actions -->
+  <div class="modal-footer">
+
+    @if (exportError()) {
+      <p class="export-error" role="alert">
+        {{ exportError() }}
+      </p>
+    }
+
+    <div class="export-actions">
+      <button
+        type="button"
+        class="download-secondary"
+        [disabled]="exporting() || !exportReady()"
+        (click)="downloadSvg()">
+        Download SVG
+      </button>
+
+      <button
+        type="button"
+        class="download-primary"
+        [disabled]="exporting() || !exportReady()"
+        (click)="downloadPng()">
+
+        @if (exporting()) {
+          Generating...
+        } @else {
+          Download High-Res PNG
+        }
+      </button>
+    </div>
+
+  </div>
+</dialog>

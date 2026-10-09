@@ -22,6 +22,7 @@ import type {
   DistrictGeometry,
 } from '../../../../core/models/district.model';
 import { TravelStateService } from '../../../../core/services/travel-state.service';
+import { prepareMapGeometry } from '../../../../core/utils/map-geometry.util';
 
 const MAP_WIDTH = 760;
 const MAP_HEIGHT = 840;
@@ -113,13 +114,7 @@ export class BangladeshMap {
 
     // Project real coordinates into our SVG.
 
-    const correctedData: DistrictCollection = {
-      type: 'FeatureCollection',
-      features: data.features.map((feature) => ({
-        ...feature,
-        geometry: fixPolygonWinding(feature.geometry),
-      })),
-    };
+    const correctedData = prepareMapGeometry(data);
 
     console.log('Corrected GeoJSON bounds:', d3.geoBounds(correctedData));
 
