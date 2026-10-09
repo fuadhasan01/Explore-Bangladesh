@@ -314,3 +314,46 @@ button:focus-visible {
     transition: none;
   }
 }
+
+
+.mobile-interaction-button {
+  display: none;
+  padding: 0.7rem 1rem;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+@media (max-width: 767px) {
+  .mobile-interaction-button {
+    display: inline-flex;
+  }
+
+  /* Normal page scrolling is allowed. */
+  .map-stage .map-svg {
+    touch-action: pan-y;
+  }
+
+  /* Enable dragging and pinch gestures
+     only when the user enters map mode. */
+  .map-stage.mobile-interactive .map-svg {
+    touch-action: none;
+  }
+
+  .map-stage.mobile-interactive {
+    outline: 2px solid #10b981;
+    outline-offset: -2px;
+  }
+
+  .map-toolbar {
+    align-items: stretch;
+  }
+
+  .zoom-controls {
+    flex-wrap: wrap;
+  }
+}
+

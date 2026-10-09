@@ -15,6 +15,7 @@ import { TravelStateService } from './core/services/travel-state.service';
 import { DistrictExplorer } from './features/travel-map/components/district-explorer/district-explorer';
 import { DivisionProgress } from './features/travel-map/components/division-progress/division-progress';
 import { MapExport } from './features/travel-map/components/map-export/map-export';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -40,6 +41,8 @@ import { MapExport } from './features/travel-map/components/map-export/map-expor
 export class App implements OnInit {
   readonly projectName = 'Explore Bangladesh';
   readonly travelState = inject(TravelStateService);
+
+  readonly themeService = inject(ThemeService);
 
   readonly menuOpen = signal(false);
 

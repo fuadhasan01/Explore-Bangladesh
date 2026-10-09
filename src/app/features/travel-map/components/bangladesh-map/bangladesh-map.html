@@ -46,10 +46,21 @@
       </button>
 
     </div>
+    <button type="button" class="mobile-interaction-button" [attr.aria-pressed]="mobileInteractionEnabled()"
+        (click)="toggleMobileInteraction()">
+    
+        @if (mobileInteractionEnabled()) {
+        Exit Map Mode
+        } @else {
+        Explore Map
+        }
+    
+    </button>
+
   </div>
 
   <!-- Map container -->
-  <div class="map-stage">
+<div class="map-stage" [class.mobile-interactive]="mobileInteractionEnabled()">
 
     @if (geoData.loading()) {
 

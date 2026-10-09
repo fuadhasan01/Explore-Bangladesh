@@ -26,13 +26,33 @@
     </div>
 
     <!-- Desktop CTA -->
-    <a href="#map-preview" class="hidden items-center gap-2 rounded-full
-                  bg-brand px-6 py-3 text-sm font-bold
-                  text-ink transition hover:bg-emerald-400
-                  lg:inline-flex">
-      Explore Map
-      <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
+<div class="hidden items-center gap-3 lg:flex">
+
+  <button type="button" class="theme-toggle" [attr.aria-label]="
+      themeService.theme() === 'dark'
+        ? 'Switch to light mode'
+        : 'Switch to dark mode'
+    " [attr.title]="
+      themeService.theme() === 'dark'
+        ? 'Light mode'
+        : 'Dark mode'
+    " (click)="themeService.toggleTheme()">
+
+    @if (themeService.theme() === 'dark') {
+    <span aria-hidden="true">☀</span>
+    } @else {
+    <span aria-hidden="true">☾</span>
+    }
+
+  </button>
+
+  <a href="#map-preview" class="btn-primary">
+    Explore Map
+    <svg lucideArrowRight class="size-4" aria-hidden="true">
+    </svg>
     </a>
+
+</div>
 
     <!-- Mobile menu toggle -->
     <button type="button" class="flex size-11 items-center justify-center
@@ -56,6 +76,20 @@
       <a href="#map-preview" (click)="closeMenu()">Explore Map</a>
       <a href="#statistics" (click)="closeMenu()">Statistics</a>
       <a href="#about" (click)="closeMenu()">About</a>
+      <button type="button" class="mobile-theme-toggle" (click)="themeService.toggleTheme()">
+      
+        <span aria-hidden="true">
+          {{ themeService.theme() === 'dark' ? '☀' : '☾' }}
+        </span>
+      
+        {{
+        themeService.theme() === 'dark'
+        ? 'Switch to Light Mode'
+        : 'Switch to Dark Mode'
+        }}
+      
+      </button>
+
       </nav>
   }
 </header>

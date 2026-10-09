@@ -23,6 +23,7 @@ import type {
 } from '../../../../core/models/district.model';
 import { TravelStateService } from '../../../../core/services/travel-state.service';
 import { prepareMapGeometry } from '../../../../core/utils/map-geometry.util';
+import { ThemeService } from '../../../../core/services/theme.service';
 
 const MAP_WIDTH = 760;
 const MAP_HEIGHT = 840;
@@ -52,6 +53,8 @@ export class BangladeshMap {
   readonly geoData = inject(DistrictGeoJsonService);
   readonly travelState = inject(TravelStateService);
   private readonly mapSvg = viewChild<ElementRef<SVGSVGElement>>('mapSvg');
+  readonly themeService = inject(ThemeService);
+  readonly mobileInteractionEnabled = signal(false);
 
   // Temporary selection state for Phase 4.
   readonly selectedCount = this.travelState.visitedCount;
@@ -69,6 +72,7 @@ export class BangladeshMap {
 
     effect(() => {
       this.travelState.visitedDistrictIds();
+      this.themeService.theme();
 
       untracked(() => {
         this.updateDistrictStyles();
@@ -225,6 +229,16 @@ export class BangladeshMap {
     this.updateDistrictStyles();
   }
 
+  toggleMobileInteraction(): void {
+    this.mobileInteractionEnabled.update((enabled) => !enabled);
+  }
+
+  private prefersReducedMotion(): boolean {
+    return (
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
   private showTooltip(event: PointerEvent, district: DistrictFeature): void {
     const svgElement = this.mapSvg()?.nativeElement;
 
@@ -278,33 +292,71 @@ export class BangladeshMap {
     }
 
     const selected = this.travelState.visitedDistrictIds();
-    this.svgSelection
-      .selectAll<SVGPathElement, DistrictFeature>('.district-path')
-      .attr('fill', (district) => {
+
+    const paths = this.svgSelection.selectAll<SVGPathElement, DistrictFeature>('.district-path');
+
+    // Accessibility attributes should update immediately.
+    paths
+      .attr('aria-pressed', (district) => {
         const id = district.properties.ADM2_PCODE;
-
-        if (id === this.hoveredDistrictId) {
-          return HOVER_COLOR;
-        }
-
-        return selected.has(id) ? VISITED_COLOR : UNVISITED_COLOR;
+        return String(selected.has(id));
       })
-      .attr('stroke', (district) =>
-        district.properties.ADM2_PCODE === this.hoveredDistrictId ? '#047857' : '#FFFFFF',
-      )
-      .attr('stroke-width', (district) =>
-        district.properties.ADM2_PCODE === this.hoveredDistrictId ? 2.5 : 1.2,
-      )
-      .attr('aria-pressed', (district) => String(selected.has(district.properties.ADM2_PCODE)))
       .attr('aria-label', (district) => {
-        const isSelected = selected.has(district.properties.ADM2_PCODE);
+        const id = district.properties.ADM2_PCODE;
+        const visited = selected.has(id);
 
         return (
           `${district.properties.ADM2_EN}, ` +
           `${district.properties.ADM1_EN} division, ` +
-          `${isSelected ? 'selected' : 'not selected'}`
+          `${visited ? 'visited' : 'not visited'}`
         );
       });
+
+    const getFill = (district: DistrictFeature): string => {
+      const id = district.properties.ADM2_PCODE;
+
+      if (id === this.hoveredDistrictId) {
+        return '#34D399';
+      }
+
+      return selected.has(id)
+        ? '#10B981'
+        : this.themeService.theme() === 'dark'
+          ? '#385566'
+          : '#DDE8E4';
+    };
+
+    const getStroke = (district: DistrictFeature): string =>
+      district.properties.ADM2_PCODE === this.hoveredDistrictId
+        ? '#047857'
+        : this.themeService.theme() === 'dark'
+          ? '#152238'
+          : '#FFFFFF';
+
+    // Cancel previous color animations so rapid clicks
+    // cannot leave districts with stale colors.
+    paths.interrupt('district-colors');
+
+    if (this.prefersReducedMotion()) {
+      paths
+        .attr('fill', getFill)
+        .attr('stroke', getStroke)
+        .attr('stroke-width', (district) =>
+          district.properties.ADM2_PCODE === this.hoveredDistrictId ? 2.5 : 1.2,
+        );
+
+      return;
+    }
+
+    paths
+      .transition('district-colors')
+      .duration(180)
+      .ease(d3.easeCubicOut)
+      .attr('fill', getFill)
+      .attr('stroke', getStroke)
+      .attr('stroke-width', (district) =>
+        district.properties.ADM2_PCODE === this.hoveredDistrictId ? 2.5 : 1.2,
+      );
   }
 
   zoomIn(): void {
