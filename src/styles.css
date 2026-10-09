@@ -1,1 +1,163 @@
-/* You can add global styles to this file, and also import other style files */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  --color-brand: #10b981;
+  --color-brand-dark: #059669;
+  --color-ink: #0b1220;
+  --color-ink-light: #152238;
+  --color-surface: #f8fafc;
+  --color-teal-accent: #14b8a6;
+  --color-gold-accent: #f59e0b;
+}
+
+:root {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font-synthesis: none;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 90px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: #a7f3d0;
+  color: #064e3b;
+}
+
+/* Shared layout */
+.page-container {
+  width: min(100% - 3rem, 1200px);
+  margin-inline: auto;
+}
+
+/* Shared buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 999px;
+  padding: 0.95rem 1.5rem;
+  background: #10b981;
+  color: #052e23;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 200ms, transform 200ms;
+}
+
+.btn-primary:hover {
+  background: #34d399;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 999px;
+  padding: 0.95rem 1.5rem;
+  background: rgb(255 255 255 / 0.06);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 200ms, border-color 200ms;
+}
+
+.btn-secondary:hover {
+  background: rgb(255 255 255 / 0.12);
+  border-color: rgb(255 255 255 / 0.35);
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 4px;
+}
+
+/* Shared feature cards */
+.feature-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e8eef3;
+  border-radius: 1.5rem;
+  background: white;
+  padding: 2rem;
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease,
+    border-color 250ms ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: #a7f3d0;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.07);
+}
+
+.icon-tile {
+  display: flex;
+  width: 3.5rem;
+  height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.section-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #059669;
+}
+
+@media (max-width: 640px) {
+  .page-container {
+    width: min(100% - 2rem, 1200px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,12 +1,41 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+
+import {
+  LucideArrowRight,
+  LucideCompass,
+  LucideDownload,
+  LucideMap,
+  LucideMapPin,
+  LucideMenu,
+  LucideX,
+} from '@lucide/angular';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.css',
+  standalone: true,
+  imports: [
+    LucideArrowRight,
+    LucideCompass,
+    LucideDownload,
+    LucideMap,
+    LucideMapPin,
+    LucideMenu,
+    LucideX,
+  ],
   templateUrl: './app.html',
+  styleUrl: './app.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  protected readonly title = signal('explore-bangladesh');
+  readonly projectName = 'Explore Bangladesh';
+
+  readonly menuOpen = signal(false);
+
+  toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
 }
