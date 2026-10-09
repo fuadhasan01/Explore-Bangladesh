@@ -368,77 +368,13 @@
   
   <!-- STATISTICS PREVIEW -->
 
+
 <section id="statistics" class="bg-surface py-24">
   <div class="page-container">
-
-    <div class="mb-10">
-      <p class="section-eyebrow">TRAVEL INSIGHTS</p>
-
-      <h2 class="mt-3 text-3xl font-extrabold
-                 tracking-tight text-ink sm:text-4xl">
-        Your Journey in Numbers
-      </h2>
-
-      <p class="mt-4 text-slate-600">
-        Track your progress across Bangladesh.
-        </p>
-        </div>
-
-    <div class="grid gap-5 sm:grid-cols-2
-                        lg:grid-cols-4">
-
-      <article class="stat-card">
-        <p class="stat-label">Total Districts</p>
-<p class="mt-4 text-4xl font-extrabold text-ink">
-  {{ travelState.totalDistricts() }}
-</p>
-
-        <p class="mt-3 text-xs text-slate-500">
-          Across Bangladesh
-        </p>
-        </article>
-
-      <article class="stat-card">
-        <p class="stat-label">Visited Districts</p>
-<p class="mt-4 text-4xl font-extrabold text-ink">
-  {{ travelState.visitedCount() }}
-</p>
-
-        <p class="mt-3 text-xs text-slate-500">
-          Your explored districts
-          </p>
-          </article>
-
-      <article class="stat-card">
-        <p class="stat-label">Remaining Districts</p>
-<p class="mt-4 text-4xl font-extrabold text-ink">
-  {{ travelState.remainingCount() }}
-</p>
-
-        <p class="mt-3 text-xs text-slate-500">
-          Places left to explore
-          </p>
-          </article>
-
-      <article class="stat-card">
-        <p class="stat-label">Exploration Progress</p>
-
-        <p class="mt-4 text-4xl font-extrabold
-                  text-brand-dark">
-          {{ travelState.progressPercentage() }}%
-        </p>
-<div class="mt-4 h-2 overflow-hidden
-                    rounded-full bg-slate-100">
-
-  <div class="h-full rounded-full bg-emerald-500
-                   transition-all duration-300" [style.width.%]="travelState.progressPercentage()">
-  </div>
-</div>
-</article>
-
+    <app-division-progress />
     </div>
-    </div>
-    </section>
+</section>
+
 
   
   

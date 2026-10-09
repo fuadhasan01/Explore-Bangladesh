@@ -1,0 +1,268 @@
+
+<section
+  class="journey-dashboard"
+  aria-labelledby="journey-heading">
+
+  <!-- Section heading -->
+  <div class="dashboard-heading">
+    <div>
+      <p class="section-label">EXPLORE YOUR JOURNEY</p>
+
+      <h2 id="journey-heading">
+        Your Bangladesh Travel Story
+      </h2>
+
+      <p class="heading-description">
+        Discover how far you've traveled across
+        Bangladesh's eight divisions.
+      </p>
+    </div>
+
+    <span class="division-counter">
+      {{ completedDivisions() }} / 8 completed
+    </span>
+  </div>
+
+  <!-- Overall progress -->
+  <div class="overview-card">
+
+    <div class="overview-top">
+      <div>
+        <p class="overview-label">
+          TOTAL EXPLORATION
+        </p>
+
+        <div class="overview-numbers">
+          <strong>
+            {{ travelState.visitedCount() }}
+          </strong>
+
+          <span>
+            / {{ travelState.totalDistricts() }}
+            districts
+          </span>
+        </div>
+
+        <p class="overview-subtitle">
+          Every district has a story worth exploring.
+        </p>
+      </div>
+
+      <div class="overall-percentage">
+        {{ travelState.progressPercentage() }}%
+      </div>
+    </div>
+
+    <div
+      class="overview-track"
+      role="progressbar"
+      aria-label="Bangladesh districts explored"
+      [attr.aria-valuenow]="travelState.visitedCount()"
+      [attr.aria-valuemax]="travelState.totalDistricts()"
+      aria-valuemin="0">
+
+      <div
+        class="overview-fill"
+        [style.width.%]="
+          travelState.progressPercentage()
+        ">
+      </div>
+    </div>
+
+    <div class="overview-metrics">
+
+      <div>
+        <strong>
+          {{ travelState.remainingCount() }}
+        </strong>
+
+        <span>Districts to explore</span>
+      </div>
+
+      <div>
+        <strong>
+          {{ startedDivisions() }} / 8
+        </strong>
+
+        <span>Divisions started</span>
+      </div>
+
+      <div>
+        <strong>
+          {{ completedDivisions() }} / 8
+        </strong>
+
+        <span>Divisions completed</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Division heading -->
+  <div class="division-heading">
+    <div>
+      <h3>Explore by Division</h3>
+
+      <p>
+        Follow your progress in every corner
+        of Bangladesh.
+      </p>
+    </div>
+  </div>
+
+  <!-- Division cards -->
+  <div class="division-grid">
+
+    @for (
+      division of travelState.divisionProgress();
+      track division.name
+    ) {
+
+      <article
+        class="division-card"
+        [class.completed]="
+          division.total > 0 &&
+          division.visited === division.total
+        ">
+
+        <div class="division-card-top">
+          <span class="division-icon" aria-hidden="true">
+            ✦
+          </span>
+
+          @if (
+            division.total > 0 &&
+            division.visited === division.total
+          ) {
+            <span class="complete-badge">
+              ✓ Completed
+            </span>
+          } @else {
+            <span class="percentage-badge">
+              {{ division.percentage }}%
+            </span>
+          }
+        </div>
+
+        <h4>{{ division.name }}</h4>
+
+        <div class="division-count">
+          <strong>{{ division.visited }}</strong>
+          <span>/ {{ division.total }} districts</span>
+        </div>
+
+        <div
+          class="division-progress-track"
+          role="progressbar"
+          [attr.aria-label]="
+            division.name + ' exploration progress'
+          "
+          [attr.aria-valuenow]="division.visited"
+          [attr.aria-valuemax]="division.total"
+          aria-valuemin="0">
+
+          <div
+            class="division-progress-fill"
+            [style.width.%]="division.percentage">
+          </div>
+        </div>
+
+        <div class="division-footer">
+          <span>
+            {{ division.remaining }} remaining
+          </span>
+
+          <button
+            type="button"
+            class="complete-action"
+            [disabled]="
+              division.total === 0 ||
+              division.visited === division.total
+            "
+            [attr.aria-label]="
+              'Mark all districts in ' +
+              division.name + ' as visited'
+            "
+            (click)="completeDivision(division.name)">
+
+            @if (
+              division.total > 0 &&
+              division.visited === division.total
+            ) {
+              Completed
+            } @else {
+              Mark all visited →
+            }
+          </button>
+        </div>
+
+      </article>
+    }
+  </div>
+
+  <!-- Manage progress -->
+  <div class="manage-progress">
+
+    <div>
+      <h3>Manage Your Travel Progress</h3>
+
+      <p>
+        Need to start over? You can clear
+        your selected districts.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="reset-journey-button"
+      [disabled]="!hasVisitedDistricts()"
+      (click)="openClearConfirmation()">
+      Reset Journey
+    </button>
+  </div>
+
+</section>
+
+<!-- Clear confirmation dialog -->
+<dialog
+  #clearDialog
+  class="confirm-dialog"
+  aria-labelledby="clear-title"
+  aria-describedby="clear-description">
+
+  <div class="dialog-content">
+
+    <div class="dialog-icon" aria-hidden="true">
+      !
+    </div>
+
+    <h2 id="clear-title">
+      Clear your travel progress?
+    </h2>
+
+    <p id="clear-description">
+      This will remove all
+      {{ travelState.visitedCount() }}
+      selected districts from your journey.
+      Your exploration statistics will reset to zero.
+    </p>
+
+    <div class="dialog-actions">
+
+      <button
+        type="button"
+        class="dialog-cancel"
+        (click)="cancelClear()">
+        Keep My Progress
+      </button>
+
+      <button
+        type="button"
+        class="dialog-confirm"
+        (click)="confirmClear()">
+        Yes, Clear All
+      </button>
+
+    </div>
+  </div>
+</dialog>

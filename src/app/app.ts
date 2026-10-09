@@ -13,6 +13,7 @@ import { DistrictGeoJsonService } from './core/services/district-geojson.service
 import { BangladeshMap } from './features/travel-map/components/bangladesh-map/bangladesh-map';
 import { TravelStateService } from './core/services/travel-state.service';
 import { DistrictExplorer } from './features/travel-map/components/district-explorer/district-explorer';
+import { DivisionProgress } from './features/travel-map/components/division-progress/division-progress';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,7 @@ import { DistrictExplorer } from './features/travel-map/components/district-expl
 
     BangladeshMap,
     DistrictExplorer,
+    DivisionProgress,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
